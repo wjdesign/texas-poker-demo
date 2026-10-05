@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="zh-Hant"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Wayne's 德州撲克遊戲</title>
+<link rel="icon" type="image/png" href="favicon.png">
+<style>
+*{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;background:#121013;color:#f5e6b2;font-family:Georgia,'Noto Serif TC',serif;overflow:hidden}canvas{display:block;width:100%;height:100%;outline:none}
+#loading{position:fixed;inset:0;display:grid;place-items:center;background:#121013;z-index:10;transition:opacity .35s}
+.screen{position:relative;height:100%;width:min(100vw,56.25vh);background:#005a43 url('loading-bg.jpg') center bottom/cover no-repeat;text-align:center;overflow:hidden}
+.brand{position:absolute;top:26%;width:100%;display:flex;align-items:center;flex-direction:column;gap:16px;padding:0 12%}.logo{width:48%;height:auto;filter:drop-shadow(0 0 16px #50e8ba66)}.title{width:100%;height:auto}.subtitle{display:flex;align-items:center;gap:14px;font-size:clamp(9px,1.5vh,15px);letter-spacing:.27em;white-space:nowrap}.subtitle:before,.subtitle:after{content:'';width:24px;height:1px;background:#b9d9bd80}
+.progress{position:absolute;top:73%;left:17%;right:17%;font-size:clamp(12px,1.8vh,18px)}#message{margin:0 0 20px;letter-spacing:.15em}.track{height:8px;border:1px solid #89c6a0;border-radius:8px;padding:1px;background:#002f2690}.fill{height:100%;width:0;background:#67ffd0;border-radius:6px;box-shadow:0 0 12px #43ffc1;transition:width .15s}#percent{margin:12px 0;font-variant-numeric:tabular-nums}.note{position:absolute;bottom:11%;width:100%;font-size:clamp(9px,1.3vh,13px);color:#acc7ad;letter-spacing:.13em}#retry{background:#d9b759;border:0;border-radius:8px;padding:10px 24px;color:#17352b;cursor:pointer}#error{font:12px sans-serif;max-height:15vh;overflow:auto;overflow-wrap:anywhere}
+.content{position:absolute;top:47%;left:0;width:100%;transform:translateY(-50%);display:flex;flex-direction:column;align-items:center;gap:clamp(28px,5vh,52px)}
+.brand{position:relative;top:auto;isolation:isolate}.brand:before{content:'';position:absolute;z-index:-1;top:-12%;left:12%;width:76%;height:85%;background:radial-gradient(ellipse,#64efb83b,transparent 68%);filter:blur(18px)}
+.logo{filter:drop-shadow(0 4px 2px #001c16cc) drop-shadow(0 9px 7px #00140fa6) drop-shadow(0 0 9px #ffdc7940) drop-shadow(0 0 24px #6dffbf70)}.title{filter:drop-shadow(0 3px 1px #001b13e6) drop-shadow(0 6px 4px #00180fb3) drop-shadow(0 0 8px #ffd87140)}
+.progress{position:relative;top:auto;left:auto;right:auto;width:66%;min-height:100px}
+#start{width:100%;padding:14px 20px;border:1px solid #f3d88a;border-radius:14px;background:linear-gradient(#f1d57e,#bb8e35);box-shadow:0 6px 20px #001e2399,inset 0 1px #fff5cb;color:#18382c;font:600 18px Georgia,serif;cursor:pointer;transition:transform .12s,filter .12s}#start:hover{filter:brightness(1.08)}#start:active{transform:translateY(2px) scale(.98)}#start:focus-visible{outline:3px solid #99ffe0;outline-offset:4px}
+@media(prefers-reduced-motion:reduce){#loading,.fill,#start{transition:none}}
+</style></head><body>
+<canvas id="canvas" aria-label="Wayne's 德州撲克遊戲"></canvas>
+<div id="loading"><section class="screen">
+<div class="content">
+<div class="brand"><img class="logo" src="loading-logo.png" alt="W 黑桃標誌"><img class="title" src="loading-title.svg" alt="Wayne's 德州撲克遊戲"><div class="subtitle">TEXAS HOLD’EM</div></div>
+<div class="progress"><p id="message" role="status">正在準備牌桌</p><div class="track" role="progressbar" aria-label="下載進度" aria-valuemin="0" aria-valuemax="100"><div class="fill"></div></div><p id="percent">連線中…</p><div id="error"></div><button id="retry" hidden onclick="location.reload()">重新載入</button><button id="start" hidden>進入遊戲桌</button></div>
+</div>
+<p class="note">展示用的體驗版，純屬娛樂，切勿沉迷</p></section></div>
+<noscript>請啟用 JavaScript 以載入遊戲。</noscript>
+<script src="index.js"></script><script>
+const config={"args":[],"canvasResizePolicy":2,"emscriptenPoolSize":8,"ensureCrossOriginIsolationHeaders":true,"executable":"index","experimentalVK":false,"fileSizes":{"index.pck":13541956,"index.wasm":39514754},"focusCanvas":true,"gdextensionLibs":[],"godotPoolSize":4};
+window.pokerStartRequested=false;
+const startButton=document.getElementById('start');
+startButton.addEventListener('click',()=>{
+  startButton.disabled=true;startButton.textContent='正在進入牌桌…';
+  window.pokerStartRequested=true;
+  document.getElementById('canvas').focus();
+  try{if(typeof window.pokerStartGame==='function')window.pokerStartGame();}catch(error){failure(error);return;}
+  const deadline=Date.now()+10000;
+  const waitForTable=()=>{
+    if(window.pokerGameStarted){overlay.style.opacity='0';setTimeout(()=>overlay.remove(),350);}
+    else if(Date.now()>deadline){failure(new Error('牌桌啟動逾時，請重新載入。'));}
+    else{setTimeout(waitForTable,50);}
+  };waitForTable();
+});
+const overlay=document.getElementById('loading'),label=document.getElementById('message'),percent=document.getElementById('percent'),track=document.querySelector('.track'),fill=document.querySelector('.fill');
+function failure(error){label.textContent='載入失敗，請重試';document.getElementById('error').textContent=String(error.message||error);document.getElementById('retry').hidden=false;percent.textContent='';}
+try{const missing=Engine.getMissingFeatures({threads:false});if(missing.length)throw new Error('瀏覽器缺少支援：'+missing.join(', '));const engine=new Engine(config);engine.startGame({onProgress(current,total){if(total>0){const value=Math.min(100,Math.floor(current/total*100));fill.style.width=value+'%';track.setAttribute('aria-valuenow',value);percent.textContent=value+'%';if(value===100)label.textContent='正在啟動牌桌…';}else{percent.textContent='下載中…';track.removeAttribute('aria-valuenow');}}}).then(()=>{label.textContent='牌桌已就緒';track.hidden=true;percent.hidden=true;startButton.hidden=false;}).catch(failure);}catch(error){failure(error);}
+</script></body></html>
+

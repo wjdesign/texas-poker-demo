@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="720" height="200" viewBox="0 0 720 200">
+  <defs><linearGradient id="gold" x2="0" y2="1"><stop stop-color="#fff5cf"/><stop offset=".45" stop-color="#f4d77d"/><stop offset="1" stop-color="#bd8e38"/></linearGradient></defs>
+  <g text-anchor="middle" fill="url(#gold)" font-family="Georgia, 'Noto Serif TC', 'PMingLiU', serif" font-weight="bold">
+    <text x="360" y="82" font-size="86" letter-spacing="3">Wayne's</text>
+    <text x="360" y="166" font-size="54" letter-spacing="10">德州撲克遊戲</text>
+  </g>
+</svg>
